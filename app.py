@@ -21,7 +21,7 @@ from botbuilder.schema import Activity, ActivityTypes
 
 from config import DefaultConfig
 from bots import DialogBot
-from dialogs import UserProfileDialog
+from dialogs import InformationDialog
 
 CONFIG = DefaultConfig()
 
@@ -73,7 +73,7 @@ CONVERSATION_STATE = ConversationState(MEMORY)
 USER_STATE = UserState(MEMORY)
 
 # create main dialog and bot
-DIALOG = UserProfileDialog(USER_STATE)
+DIALOG = InformationDialog(USER_STATE)
 BOT = DialogBot(CONVERSATION_STATE, USER_STATE, DIALOG)
 
 
