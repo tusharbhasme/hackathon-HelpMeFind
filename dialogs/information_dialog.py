@@ -102,12 +102,21 @@ class InformationDialog(ComponentDialog):
                 PromptOptions(prompt=MessageFactory.text("Please enter the details.")),
             )
         else:
-            data = db_get_data(step_context.values["dept"], step_context.values["section"], step_context.values["location"])
-            data = ('; '.join([d[0] for d in data]))
-            await step_context.context.send_activity(
-                MessageFactory.text(f"Here is the data : \n {data}")
+            data = db_get_data(
+                step_context.values["dept"],
+                step_context.values["section"],
+                step_context.values["location"]
             )
-        return await step_context.end_dialog()
+            if data and len(data) > 0:
+                data = ('; '.join([d[0] for d in data]))
+                await step_context.context.send_activity(
+                    MessageFactory.text(f"Here is the data : \n {data}")
+                )
+            else:
+                await step_context.context.send_activity(
+                    MessageFactory.text(f"Sorry, I don't have any data for this department or location!")
+                )
+            return await step_context.end_dialog()
 
     async def confirm_step(
             self, step_context: WaterfallStepContext
