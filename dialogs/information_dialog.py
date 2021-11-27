@@ -9,12 +9,9 @@ from botbuilder.dialogs import (
 )
 from botbuilder.dialogs.prompts import (
     TextPrompt,
-    NumberPrompt,
     ChoicePrompt,
     ConfirmPrompt,
-    AttachmentPrompt,
     PromptOptions,
-    PromptValidatorContext,
 )
 from botbuilder.dialogs.choices import Choice
 from botbuilder.core import MessageFactory, UserState
@@ -37,8 +34,6 @@ class InformationDialog(ComponentDialog):
             self.confirm_step,
             self.save_step,
         ]))
-
-        # self.user_profile_accessor = user_state.create_property("UserProfile")
         self.add_dialog(TextPrompt(TextPrompt.__name__))
         self.add_dialog(ChoicePrompt(ChoicePrompt.__name__))
         self.add_dialog(ConfirmPrompt(ConfirmPrompt.__name__))
@@ -61,19 +56,13 @@ class InformationDialog(ComponentDialog):
     ) -> DialogTurnResult:
         action = step_context.result.value
         step_context.values["action"] = action
-        if action == "Find":
-            await step_context.context.send_activity(
-                "My database is currently empty. Please feed some data first"
-            )
-            return await step_context.end_dialog()
-        elif action == "Save":
-            return await step_context.prompt(
-                ChoicePrompt.__name__,
-                PromptOptions(
-                    prompt=MessageFactory.text("Select a department for the data"),
-                    choices=[Choice("Healthcare"), Choice("HR"), Choice("Finance")],
-                ),
-            )
+        return await step_context.prompt(
+            ChoicePrompt.__name__,
+            PromptOptions(
+                prompt=MessageFactory.text("Select a department for the data"),
+                choices=[Choice("Healthcare"), Choice("HR"), Choice("Finance")],
+            ),
+        )
 
     async def help_type_step(
         self, step_context: WaterfallStepContext
@@ -106,10 +95,17 @@ class InformationDialog(ComponentDialog):
     ) -> DialogTurnResult:
         location = Location(step_context.result.value)
         step_context.values["location"] = location.value
-        return await step_context.prompt(
-            TextPrompt.__name__,
-            PromptOptions(prompt=MessageFactory.text("Please enter the details.")),
-        )
+        if step_context.values["action"] == 'Save':
+            return await step_context.prompt(
+                TextPrompt.__name__,
+                PromptOptions(prompt=MessageFactory.text("Please enter the details.")),
+            )
+        else:
+            #TODO get data
+            await step_context.context.send_activity(
+                MessageFactory.text("Here is the data")
+            )
+        return await step_context.end_dialog()
 
     async def confirm_step(
             self, step_context: WaterfallStepContext
