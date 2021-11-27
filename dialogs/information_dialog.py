@@ -18,6 +18,7 @@ from botbuilder.core import MessageFactory, UserState
 
 from data_models.enums import Department, Location
 from data_models.help_data import HelpData
+from dialogs.user_dialog_helper import db_insert_data
 
 
 class InformationDialog(ComponentDialog):
@@ -137,7 +138,7 @@ class InformationDialog(ComponentDialog):
             help_data.section = values['section']
             help_data.location = Location(values['location'])
             help_data.details = values['details']
-            #TODO save data
+            db_insert_data(help_data)
             await step_context.context.send_activity(
                 MessageFactory.text("Thanks, data has been added successfully!")
             )

@@ -3,4 +3,6 @@
 
 from .information_dialog import InformationDialog
 
-__all__ = ["InformationDialog"]
+import dialogs.db_config as db_init
+
+__all__ = ["InformationDialog", "db_init"]
