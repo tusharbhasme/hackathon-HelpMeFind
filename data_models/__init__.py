@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-from .user_profile import UserProfile
+from .help_data import HelpData
+from .enums import Section, HRSection, FinanceSection, HealthcareSection, Department, Location
 
-__all__ = ["UserProfile"]
+__all__ = ["HelpData", "Section", "HRSection", "FinanceSection", "HealthcareSection", "Department", "Location"]
