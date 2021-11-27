@@ -20,7 +20,7 @@ from botbuilder.dialogs.choices import Choice
 from botbuilder.core import MessageFactory, UserState
 
 from data_models import UserProfile
-from data_models.enums import Department, HealthcareSection, Location
+from data_models.enums import Department, HealthcareSection, Location, Section
 from data_models.help_data import HelpData
 
 
@@ -41,30 +41,8 @@ class InformationDialog(ComponentDialog):
 
         # self.user_profile_accessor = user_state.create_property("UserProfile")
         self.add_dialog(TextPrompt(TextPrompt.__name__))
-        self.add_dialog(
-            WaterfallDialog(
-                WaterfallDialog.__name__,
-                [
-                    self.transport_step,
-                    self.name_step,
-                    self.name_confirm_step,
-                    self.age_step,
-                    self.picture_step,
-                    self.confirm_step,
-                    self.summary_step,
-                ],
-            )
-        )
-        self.add_dialog(
-            NumberPrompt(NumberPrompt.__name__, InformationDialog.age_prompt_validator)
-        )
         self.add_dialog(ChoicePrompt(ChoicePrompt.__name__))
         self.add_dialog(ConfirmPrompt(ConfirmPrompt.__name__))
-        self.add_dialog(
-            AttachmentPrompt(
-                AttachmentPrompt.__name__, InformationDialog.picture_prompt_validator
-            )
-        )
 
         self.initial_dialog_id = "help_flow"
 
@@ -102,7 +80,7 @@ class InformationDialog(ComponentDialog):
         self, step_context: WaterfallStepContext
     ) -> DialogTurnResult:
         dept = Department(step_context.result.value)
-        step_context.values["dept"] = dept
+        step_context.values["dept"] = dept.value
         return await step_context.prompt(
             ChoicePrompt.__name__,
             PromptOptions(
@@ -120,7 +98,7 @@ class InformationDialog(ComponentDialog):
             ChoicePrompt.__name__,
             PromptOptions(
                 prompt=MessageFactory.text("Select a location"),
-                choices=[Choice(e) for e in Location],
+                choices=[Choice(e.name) for e in Location],
             ),
         )
 
@@ -128,7 +106,7 @@ class InformationDialog(ComponentDialog):
             self, step_context: WaterfallStepContext
     ) -> DialogTurnResult:
         location = Location(step_context.result.value)
-        step_context.values["section"] = location
+        step_context.values["location"] = location.value
         return await step_context.prompt(
             TextPrompt.__name__,
             PromptOptions(prompt=MessageFactory.text("Please enter the details.")),
@@ -137,11 +115,12 @@ class InformationDialog(ComponentDialog):
     async def confirm_step(
             self, step_context: WaterfallStepContext
     ) -> DialogTurnResult:
-        details = step_context.result.value
+        details = step_context.result
         step_context.values["details"] = details
         values = step_context.values
         await step_context.context.send_activity(
-            MessageFactory.text(f"You have entered below info for {values['section']} of {values['dept']} department")
+            MessageFactory.text(
+                f"You have entered below info for {values['section']} of {values['dept']} department at {values['location']}")
         )
         await step_context.context.send_activity(details)
         return await step_context.prompt(
@@ -160,7 +139,18 @@ class InformationDialog(ComponentDialog):
             )
             values = step_context.values
             help_data.department = Department(values['dept'])
+            help_data.section = values['section']
+            help_data.location = Location(values['location'])
+            help_data.details = values['details']
             #TODO save data
+            await step_context.context.send_activity(
+                MessageFactory.text("Thanks, data has been added successfully!")
+            )
+        else:
+            await step_context.context.send_activity(
+                MessageFactory.text("Discarded the data, please try again")
+            )
+        return await step_context.end_dialog()
 
     async def transport_step(
         self, step_context: WaterfallStepContext
@@ -254,20 +244,6 @@ class InformationDialog(ComponentDialog):
             ),
         )
         return await step_context.prompt(AttachmentPrompt.__name__, prompt_options)
-
-    async def confirm_step(
-        self, step_context: WaterfallStepContext
-    ) -> DialogTurnResult:
-        step_context.values["picture"] = (
-            None if not step_context.result else step_context.result[0]
-        )
-
-        # WaterfallStep always finishes with the end of the Waterfall or
-        # with another dialog; here it is a Prompt Dialog.
-        return await step_context.prompt(
-            ConfirmPrompt.__name__,
-            PromptOptions(prompt=MessageFactory.text("Is this ok?")),
-        )
 
     async def summary_step(
         self, step_context: WaterfallStepContext
