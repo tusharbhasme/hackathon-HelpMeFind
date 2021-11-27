@@ -22,6 +22,7 @@ from botbuilder.core import MessageFactory, UserState
 from data_models import UserProfile
 from data_models.enums import Department, HealthcareSection, Location
 from data_models.help_data import HelpData
+from dialogs.user_dialog_helper import db_insert_data
 
 
 class InformationDialog(ComponentDialog):
@@ -160,6 +161,7 @@ class InformationDialog(ComponentDialog):
             )
             values = step_context.values
             help_data.department = Department(values['dept'])
+            db_insert_data(help_data)
             #TODO save data
 
     async def transport_step(
