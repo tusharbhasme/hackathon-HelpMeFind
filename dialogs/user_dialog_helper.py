@@ -14,12 +14,12 @@ def db_insert_data(help_data: HelpData):
     conn.close()
 
 
-def db_get_data(department, section):
-    sql = ''' SELECT * FROM facility_data WHERE department=? and section=?'''
+def db_get_data(department, section, location):
+    sql = ''' SELECT details FROM facility_data WHERE department=? and section=? and location=?'''
     conn = create_connection()
     with conn:
         cur = conn.cursor()
-        cur.execute(sql, [department, section])
+        cur.execute(sql, [department, section, location])
         rows = cur.fetchall()
     conn.close()
     return rows

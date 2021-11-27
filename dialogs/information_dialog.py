@@ -18,7 +18,7 @@ from botbuilder.core import MessageFactory, UserState
 
 from data_models.enums import Department, Location
 from data_models.help_data import HelpData
-from dialogs.user_dialog_helper import db_insert_data
+from dialogs.user_dialog_helper import db_insert_data, db_get_data
 
 
 class InformationDialog(ComponentDialog):
@@ -102,9 +102,10 @@ class InformationDialog(ComponentDialog):
                 PromptOptions(prompt=MessageFactory.text("Please enter the details.")),
             )
         else:
-            #TODO get data
+            data = db_get_data(step_context.values["dept"], step_context.values["section"], step_context.values["location"])
+            data = ('; '.join([d[0] for d in data]))
             await step_context.context.send_activity(
-                MessageFactory.text("Here is the data")
+                MessageFactory.text(f"Here is the data : \n {data}")
             )
         return await step_context.end_dialog()
 
